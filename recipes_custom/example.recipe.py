@@ -6,9 +6,7 @@
 """
 github.blog
 """
-from datetime import timezone, timedelta
 from calibre.web.feeds.news import BasicNewsRecipe
-from calibre.web.feeds import Feed
 
 _name = "GitHub Blog"
 
