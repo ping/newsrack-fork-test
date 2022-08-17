@@ -25,4 +25,12 @@ recipes: List[Recipe] = [
         category="example",
         enable_on=onlyon_weekdays([1, 3, 5], 10),  # tues, thurs, sat
     ),
+    # newsrack builtin recipe
+    Recipe(
+        recipe="vox",
+        slug="vox",
+        src_ext="mobi",
+        target_ext=["epub"],
+        category="magazines",
+    ),
 ]
