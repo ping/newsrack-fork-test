@@ -3,7 +3,7 @@ from typing import List
 from _recipe_utils import Recipe, CoverOptions, onlyon_weekdays
 
 # Define the categories display order, optional
-categories_sort: List[str] = []
+categories_sort: List[str] = ["example", "magazines"]
 
 # Define your custom recipes list here
 # Example: https://github.com/ping/newsrack-fork-test/blob/custom/_recipes_custom.py
