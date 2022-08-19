@@ -6,7 +6,7 @@ Because you cannot fork your own repository on GitHub, this is a copy with the [
 
 The customisations shown here should also work on an actual fork.
 
-## Summary of Changes
+## [Summary of Changes](https://github.com/ping/newsrack-fork-test/compare/main...custom)
 
 - [Customise recipes and cron schedule](https://github.com/ping/newsrack-fork-test/compare/main...custom) in new [`custom`](https://github.com/ping/newsrack-fork-test/tree/custom) branch
 - Change default branch to [`custom`](https://github.com/ping/newsrack-fork-test/tree/custom)
