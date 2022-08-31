@@ -192,12 +192,16 @@ recipes: List[Recipe] = [
         overwrite_cover=False,
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4], -5),
     ),
+    # don't let NYT recipes overlap to avoid throttling
     Recipe(
         recipe="nytimes-global",
         slug="nytimes-global",
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
+        enable_on=onlyat_hours(
+            list(range(0, 4)) + list(range(8, 18)) + list(range(22, 24))
+        ),
     ),
     Recipe(
         recipe="nytimes-paper",
@@ -206,7 +210,7 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         overwrite_cover=False,
         category="News",
-        enable_on=onlyat_hours(list(range(20, 24)) + list(range(0, 4))),
+        enable_on=onlyat_hours(list(range(4, 8))),
     ),
     Recipe(
         recipe="nytimes-books",
@@ -214,7 +218,7 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="Books",
-        enable_on=onlyon_weekdays([0, 1, 2, 3, 4], -5),
+        enable_on=onlyat_hours(list(range(18, 22))),
     ),
     Recipe(
         recipe="poetry",
