@@ -20,6 +20,7 @@ recipes: List[Recipe] = [
             text_colour="white",
             background_colour="black",
         ),  # generate black cover with white text
+        tags=["example"]
     ),
     # Builtin Calibre recipe example
     Recipe(
@@ -29,6 +30,7 @@ recipes: List[Recipe] = [
         src_ext="epub",
         category="Examples",
         enable_on=onlyon_weekdays([1, 3, 5], 10),  # tues, thurs, sat
+        tags=["business"]
     ),
     # newsrack builtin recipe
     Recipe(
@@ -37,5 +39,6 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="Example Magazines",
+        tags=["news"]
     ),
 ]
