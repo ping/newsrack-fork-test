@@ -37,6 +37,7 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
+        tags=["asia"],
     ),
     Recipe(
         recipe="asian-review",
@@ -45,6 +46,7 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         category="Books",
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4], 8),
+        tags=["asia"],
     ),
     Recipe(
         recipe="atlantic",
@@ -52,6 +54,7 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="Magazines",
+        tags=["editorial", "commentary"],
     ),
     Recipe(
         recipe="atlantic-magazine",
@@ -62,6 +65,7 @@ recipes: List[Recipe] = [
         category="Magazines",
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4], -4)
         and onlyon_days(list(range(32 - 14, 32)), -4),
+        tags=["editorial", "commentary"],
     ),
     Recipe(
         recipe="channelnewsasia",
@@ -69,6 +73,7 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
+        tags=["asia"],
     ),
     Recipe(
         recipe="thediplomat",
@@ -78,6 +83,7 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         category="Magazines",
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4, 5], 5.5),
+        tags=["asia"],
     ),
     Recipe(
         recipe="economist",
@@ -90,7 +96,14 @@ recipes: List[Recipe] = [
     ),
     Recipe(
         recipe="ft",
-        slug="ft",
+        slug="ft-online",
+        src_ext="mobi",
+        target_ext=["epub"],
+        category="News",
+    ),
+    Recipe(
+        recipe="ft-paper",
+        slug="ft-print",
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
@@ -118,6 +131,7 @@ recipes: List[Recipe] = [
         overwrite_cover=False,
         category="Magazines",
         enable_on=onlyon_days(list(range(1, 1 + 3)) + list(range(32 - 14, 32)), -5),
+        tags=["business"],
     ),
     Recipe(
         recipe="joongangdaily",
@@ -125,6 +139,7 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
+        tags=["asia"],
     ),
     Recipe(
         recipe="korea-herald",
@@ -132,6 +147,7 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
+        tags=["asia"],
     ),
     Recipe(
         recipe="london-review",
@@ -157,6 +173,7 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         category="Magazines",
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4, 5], -4),
+        tags=["technology"],
     ),
     Recipe(
         recipe="mit-tech-review-magazine",
@@ -166,6 +183,7 @@ recipes: List[Recipe] = [
         category="Magazines",
         overwrite_cover=False,
         enable_on=onlyon_days(list(range(1, 1 + 7)) + list(range(32 - 7, 32)), -5),
+        tags=["technology"],
     ),
     Recipe(
         recipe="nature",
@@ -175,6 +193,7 @@ recipes: List[Recipe] = [
         category="Magazines",
         overwrite_cover=False,
         enable_on=onlyon_weekdays([2, 3, 4], 0),
+        tags=["science"],
     ),
     Recipe(
         recipe="nautilus",
@@ -182,6 +201,7 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="Magazines",
+        tags=["science"],
     ),
     Recipe(
         recipe="newyorker",
@@ -191,6 +211,7 @@ recipes: List[Recipe] = [
         category="Magazines",
         overwrite_cover=False,
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4], -5),
+        tags=["editorial", "commentary"],
     ),
     # don't let NYT recipes overlap to avoid throttling
     Recipe(
@@ -228,6 +249,7 @@ recipes: List[Recipe] = [
         overwrite_cover=False,
         category="Magazines",
         enable_on=onlyon_days(list(range(1, 1 + 7)) + list(range(32 - 7, 32)), -5),
+        tags=["literature", "arts"],
     ),
     Recipe(
         recipe="propublica",
@@ -252,6 +274,7 @@ recipes: List[Recipe] = [
         category="Magazines",
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4, 5])
         and onlyat_hours(list(range(9, 19))),
+        tags=["technology"],
     ),
     Recipe(
         recipe="scientific-american",
@@ -261,6 +284,7 @@ recipes: List[Recipe] = [
         category="Magazines",
         overwrite_cover=False,
         enable_on=onlyon_days(list(range(15, 31)), -5),  # middle of the month?
+        tags=["science"],
     ),
     Recipe(
         recipe="scmp",
@@ -268,6 +292,7 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
+        tags=["asia"],
     ),
     Recipe(
         recipe="sydney-morning-herald",
@@ -284,6 +309,7 @@ recipes: List[Recipe] = [
         timeout=600,
         category="News",
         enable_on=onlyat_hours(list(range(6, 14)), 8),
+        tags=["asia"],
     ),
     Recipe(
         recipe="thirdpole",
@@ -292,6 +318,7 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         category="Magazines",
         enable_on=onlyat_hours(list(range(5, 20)), 5.5),
+        tags=["asia", "climate"],
     ),
     Recipe(
         recipe="time-magazine",
@@ -324,5 +351,6 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         overwrite_cover=True,
         category="Magazines",
+        tags=["technology"],
     ),
 ]
