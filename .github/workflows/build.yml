@@ -68,7 +68,9 @@ jobs:
 
       - name: Get latest calibre version
         id: calibrelatest
-        run: echo "::set-output name=ver::$(curl -L --retry 2 --silent 'http://code.calibre-ebook.com/latest')"
+        run: |
+          tag="$(curl -L --retry 2 --silent 'https://api.github.com/repos/kovidgoyal/calibre/releases/latest' | jq -r .tag_name)" && \
+          echo "::set-output name=ver::${tag#*v}"
 
       - name: Calibre binaries cache
         id: cache-bin
@@ -78,7 +80,7 @@ jobs:
           key: cache-calibre-x86_64-${{ steps.calibrelatest.outputs.ver }}
 
       - name: Install calibre
-        run: sh _install_calibre.sh
+        run: sh .github/workflows/install_calibre.sh
 
       - name: Generate periodicals
         env:
@@ -88,7 +90,7 @@ jobs:
           verbose: ${{ github.event.inputs.verbose }}
         run: |
           export CI_PAGES_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io${GITHUB_REPOSITORY:${#GITHUB_REPOSITORY_OWNER}}/"
-          sh _build.sh
+          sh build.sh
           if [[ -f 'job_summary.md' ]]; then cat 'job_summary.md' >> $GITHUB_STEP_SUMMARY; fi
           echo -e "\n<"'!'"-- Commit ${GITHUB_SHA:0:7} -->" >> public/index.html
 
