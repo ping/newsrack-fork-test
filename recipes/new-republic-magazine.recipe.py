@@ -6,7 +6,7 @@ from datetime import datetime
 from functools import cmp_to_key
 from urllib.parse import urljoin, urlencode, urlsplit
 
-from calibre.web.feeds.news import BasicNewsRecipe, classes
+from calibre.web.feeds.news import BasicNewsRecipe
 from calibre.ebooks.BeautifulSoup import BeautifulSoup
 
 _name = "The New Republic Magazine"
@@ -166,7 +166,6 @@ fragment ArticlePageFields on Article {
       }
     }
   }
-  ampEnabled
   tags {
     id
     slug
@@ -271,6 +270,7 @@ fragment ArticlePageFields on Article {
         res = br.open_novisit("https://newrepublic.com/api/content/magazine")
         magazine = json.loads(res.read().decode("utf-8"))["data"]
         self.pub_date = datetime.fromisoformat(magazine["metaData"]["publishedAt"])
+        self.log.debug(f'Found issue: {magazine["metaData"]["issueTag"]["text"]}')
         self.title = f'{_name}: {magazine["metaData"]["issueTag"]["text"]}'
         self.cover_url = self._urlize(magazine["metaData"]["image"]["src"])
 
@@ -282,6 +282,7 @@ fragment ArticlePageFields on Article {
                 continue
             try:
                 for article in articles:
+                    self.log.debug(f'Found article: {article["title"]}')
                     feed_articles.append(
                         {
                             "url": self._article_endpoint(article["nid"]),
