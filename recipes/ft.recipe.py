@@ -40,8 +40,8 @@ class FinancialTimes(BasicNewsRecipe):
 
     extra_css = """
     .headline { font-size: 1.8rem; margin-bottom: 0.5rem; }
-    .sub-headline { margin-bottom: 0.4rem;  color: #444; font-size: 1.2rem; }
-    .article-meta { margin-top: 1rem; padding-bottom: 0.2rem; border-bottom: 1px solid #aaa; }
+    .sub-headline { margin-bottom: 0.4rem;  font-size: 1.2rem; font-style: italic; }
+    .article-meta { margin-top: 1rem; padding-bottom: 0.2rem; }
     .article-meta .author { font-weight: bold; color: #444; }
     .article-meta .published-dt { margin-left: 0.5rem; }
     .article-img { margin-bottom: 0.8rem; }
@@ -153,3 +153,11 @@ class FinancialTimes(BasicNewsRecipe):
 
     def publication_date(self):
         return self.pub_date
+
+    def get_browser(self, *a, **kw):
+        kw[
+            "user_agent"
+        ] = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+        br = BasicNewsRecipe.get_browser(self, *a, **kw)
+        br.addheaders = [("referer", "https://www.google.com/")]
+        return br
