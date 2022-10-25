@@ -130,6 +130,10 @@ https://opensource.org/licenses/GPL-3.0
     var searchInfo = document.getElementById("search-info");
     window.addEventListener("DOMContentLoaded", function() {
         if (typeof(lunr) !== "undefined") {
+            var searchTextField = document.getElementById("search-text");
+            var searchButton = document.getElementById("search-button");
+            var ogPlaceholderText = searchTextField.placeholder;
+            searchTextField.placeholder = "Indexing search...";
             var periodicalsEles = document.querySelectorAll("ol.books > li");
 
             function resetSearch() {
@@ -172,8 +176,9 @@ https://opensource.org/licenses/GPL-3.0
                         "category": catName
                     });
                 }
-                document.getElementById("search-text").disabled = false;
-                document.getElementById("search-button").disabled = false;
+                searchTextField.placeholder = ogPlaceholderText;
+                searchTextField.disabled = false;
+                searchButton.disabled = false;
             });
 
             // unhide everything when search field is cleared
