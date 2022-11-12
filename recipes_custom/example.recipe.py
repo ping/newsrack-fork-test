@@ -13,7 +13,10 @@ _name = "GitHub Blog"
 
 class GitHubBlog(BasicNewsRecipe):
     title = _name
-    description = "Updates, ideas, and inspiration from GitHub to help developers build and design software."
+    description = (
+        "Updates, ideas, and inspiration from GitHub to help "
+        "developers build and design software. https://github.blog/"
+    )
     language = "en"
     __author__ = "ping"
     publication_type = "blog"
