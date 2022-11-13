@@ -100,9 +100,11 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         category="News",
         tags=["business"],
-        overwrite_cover=False,
         enable_on=not (onlyon_weekdays([5]) and onlyat_hours(list(range(2, 8)))),
         timeout=360,
+        cover_options=CoverOptions(
+            logo_path_or_url="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/New_Bloomberg_Logo.svg/1024px-New_Bloomberg_Logo.svg.png"
+        ),
     ),
     Recipe(
         recipe="channelnewsasia",
@@ -245,6 +247,7 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         category="Magazines",
         tags=["science"],
+        cover_options=CoverOptions(logo_path_or_url="https://i.imgur.com/OMxGtzQ.jpg"),
     ),
     Recipe(
         recipe="korea-herald",
@@ -274,7 +277,8 @@ recipes: List[Recipe] = [
         category="Magazines",
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4], -4),
         cover_options=CoverOptions(
-            logo_path_or_url="https://thereader.mitpress.mit.edu/wp-content/themes/ta/img/log.png"
+            text_colour="#444444",
+            logo_path_or_url="https://dhjhkxawhe8q4.cloudfront.net/mit-press/wp-content/uploads/2022/03/25123303/mitp-reader-logo_0-scaled.jpg",
         ),
     ),
     Recipe(
@@ -286,7 +290,8 @@ recipes: List[Recipe] = [
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4, 5], -4),
         tags=["technology"],
         cover_options=CoverOptions(
-            logo_path_or_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/MIT_Technology_Review_modern_logo.svg/1024px-MIT_Technology_Review_modern_logo.svg.png"
+            text_colour="#444444",
+            logo_path_or_url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/MIT_Technology_Review_modern_logo.svg/1024px-MIT_Technology_Review_modern_logo.svg.png",
         ),
     ),
     Recipe(
