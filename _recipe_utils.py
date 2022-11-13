@@ -23,12 +23,15 @@ class CoverOptions:
 
     cover_width: int = 889
     cover_height: int = 1186
+    border_offset: int = 25
+    border_width: int = 2
     text_colour: str = "black"
     background_colour: str = "white"
     title_font_path: str = "static/OpenSans-Bold.ttf"
     title_font_size: int = 80
     datestamp_font_path: str = "static/OpenSans-Bold.ttf"
     datestamp_font_size: int = 72
+    logo_path_or_url: str = ""  # must be a png/jpg/gif
 
 
 @dataclass
@@ -53,7 +56,7 @@ class Recipe:
         1  # number of attempts to retry on TimeoutExpired, ReadTimeout
     )
     conv_options: Dict[str, List[str]] = field(
-        default_factory=lambda: default_conv_options, init=False
+        default_factory=lambda: default_conv_options
     )  # conversion options for specific formats
     cover_options: CoverOptions = (
         CoverOptions()
