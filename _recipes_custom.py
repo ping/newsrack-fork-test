@@ -17,6 +17,7 @@ recipes: List[Recipe] = [
         category="Examples",
         target_ext=["pdf"],
         cover_options=CoverOptions(
+            logo_path_or_url="https://github.githubassets.com/images/modules/logos_page/GitHub-Logo.png",
             text_colour="white",
             background_colour="black",
         ),  # generate black cover with white text
