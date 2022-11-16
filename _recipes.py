@@ -153,6 +153,17 @@ recipes: List[Recipe] = [
         ),
     ),
     Recipe(
+        recipe="fivethirtyeight",
+        slug="fivethirtyeight",
+        src_ext="mobi",
+        target_ext=["epub"],
+        category="Magazines",
+        tags=["politics"],
+        cover_options=CoverOptions(
+            logo_path_or_url="https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/FiveThirtyEight_Logo.svg/1024px-FiveThirtyEight_Logo.svg.png"
+        ),
+    ),
+    Recipe(
         recipe="forbes-editors-picks",
         slug="forbes-editors-picks",
         src_ext="mobi",
@@ -353,7 +364,8 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
-        timeout=480,
+        timeout=600,
+        retry_attempts=0,
         enable_on=onlyat_hours(
             list(range(0, 4)) + list(range(8, 18)) + list(range(22, 24))
         ),
@@ -367,6 +379,8 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
+        timeout=900,
+        retry_attempts=0,
         enable_on=onlyat_hours(list(range(4, 8))),
         cover_options=CoverOptions(
             logo_path_or_url="https://static01.nyt.com/newsgraphics/2015/12/23/masthead-2016/8118277965bda8228105578895f2f4a7aeb22ce2/nyt-logo.png"
@@ -378,6 +392,8 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="Books",
+        timeout=300,
+        retry_attempts=0,
         enable_on=onlyat_hours(list(range(18, 22))),
         cover_options=CoverOptions(
             logo_path_or_url="https://static01.nyt.com/newsgraphics/2015/12/23/masthead-2016/8118277965bda8228105578895f2f4a7aeb22ce2/nyt-logo.png"
