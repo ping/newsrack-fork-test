@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from calibre import browser
 from calibre.ebooks.BeautifulSoup import BeautifulSoup
 from calibre.web.feeds.news import BasicNewsRecipe, classes, prefixed_classes
+from calibre.ebooks.markdown import Markdown
 
 
 def absurl(x):
@@ -60,7 +61,6 @@ class NewYorker(BasicNewsRecipe):
         .caption { font-size: 0.8rem; font-weight: normal; }
     """
     keep_only_tags = [
-        prefixed_classes("IframeEmbedWrapper-sc-"),
         dict(class_="og"),
         dict(attrs={"data-attribute-verso-pattern": "article-body"}),
         dict(
@@ -76,20 +76,36 @@ class NewYorker(BasicNewsRecipe):
 
     remove_tags = [
         classes("social-icons"),
+        prefixed_classes(
+            "ResponsiveCartoonLinkButtonWrapper- IframeEmbedWrapper- GenericCalloutWrapper-"
+        ),
         dict(childtypes="iframe"),
         dict(name=["button"]),
     ]
-    remove_attributes = ["style"]
+    remove_attributes = ["style", "sizes", "data-event-click"]
 
     def publication_date(self):
         return self.pub_date
 
     def preprocess_raw_html(self, raw_html, url):
         soup = BeautifulSoup(raw_html)
+
         for script in soup.find_all(name="script", type="application/ld+json"):
             info = json.loads(script.contents[0])
             if not info.get("headline"):
                 continue
+
+            interactive_container = soup.body.find(id="___gatsby")
+            try:
+                if interactive_container:
+                    interactive_container.clear()
+                    md = Markdown()
+                    interactive_container.append(
+                        BeautifulSoup(md.convert(info["articleBody"]))
+                    )
+                    interactive_container["class"] = "og"
+            except Exception as e:
+                self.log.warning(f"Unable to convert interactive article: {e}")
 
             h1 = soup.new_tag("h1", attrs={"class": "og headline"})
             h1.append(info["headline"])
@@ -120,6 +136,14 @@ class NewYorker(BasicNewsRecipe):
                 subheadline = soup.new_tag("div", attrs={"class": "og sub-headline"})
                 subheadline.append(info["description"])
                 h1.insert_after(subheadline)
+
+            if info.get("image"):
+                lede_img_container = soup.new_tag(
+                    "div", attrs={"class": "og responsive-asset"}
+                )
+                lede_image = soup.new_tag("img", attrs={"src": info["image"][-1]})
+                lede_img_container.append(lede_image)
+                meta.insert_after(lede_img_container)
 
             break
 
