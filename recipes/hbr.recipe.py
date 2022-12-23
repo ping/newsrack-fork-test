@@ -1,4 +1,3 @@
-import re
 from collections import OrderedDict
 from datetime import datetime, timezone
 from urllib.parse import urljoin
@@ -10,6 +9,7 @@ from calibre.web.feeds.news import BasicNewsRecipe, classes
 # Original https://github.com/kovidgoyal/calibre/blob/49a1d469ce4f04f79ce786a75b8f4bdcfd32ad2c/recipes/hbr.recipe
 
 _name = "Harvard Business Review"
+_issue_url = ""
 
 
 class HBR(BasicNewsRecipe):
@@ -51,7 +51,7 @@ class HBR(BasicNewsRecipe):
             box-sizing: border-box;
         }
         .container--caption-credits-hero, .container--caption-credits-inline, span.credit { font-size: 0.8rem; }
-        .article-sidebar { margin-left: 0.5rem; display: block; }
+        .article-sidebar { border: 1px solid #000; padding: 0.8rem; display: block; }
         .question { font-weight: bold; }
         .description-text {
             margin: 1rem 0;
@@ -63,7 +63,7 @@ class HBR(BasicNewsRecipe):
 
     keep_only_tags = [
         classes(
-            "headline-container article-dek-group pub-date hero-image-content article-summary article-body standard-content"
+            "headline-container article-dek-group pub-date hero-image-content article-body standard-content"
         ),
         dict(name="article-sidebar"),
     ]
@@ -121,47 +121,58 @@ class HBR(BasicNewsRecipe):
             self.pub_date = post_date
 
     def parse_index(self):
-        soup = self.index_to_soup(f"{self.base_url}/magazine")
-        a = soup.find("a", href=lambda x: x and x.startswith("/archive-toc/"))
-        cov_url = a.find("img", attrs={"src": True})["src"]
-        self.cover_url = urljoin(self.base_url, cov_url)
-        self.log("Downloading issue:", a["href"])
-        soup = self.index_to_soup(urljoin(self.base_url, a["href"]))
+        if not _issue_url:
+            soup = self.index_to_soup(f"{self.base_url}/magazine")
+            a = soup.find("a", href=lambda x: x and x.startswith("/archive-toc/"))
+            cov_url = a.find("img", attrs={"src": True})["src"]
+            self.cover_url = urljoin(self.base_url, cov_url)
+            issue_url = urljoin(self.base_url, a["href"])
+        else:
+            # no cover if custom issue url is specified
+            issue_url = _issue_url
+
+        self.log("Downloading issue:", issue_url)
+        soup = self.index_to_soup(issue_url)
         issue_title = soup.find("h1")
         if issue_title:
             self.title = f"{_name}: {self.tag_to_string(issue_title)}"
 
         feeds = OrderedDict()
 
-        for h3 in soup.findAll("h3", attrs={"class": "hed"}):
-            articles = []
-            d = datetime.today()
-            for a in h3.findAll(
-                "a", href=lambda x: x.startswith("/" + d.strftime("%Y") + "/")
-            ):
+        for h3 in soup.find_all("h3", attrs={"class": "hed"}):
+            article_link_ele = h3.find("a")
+            if not article_link_ele:
+                continue
 
-                title = self.tag_to_string(a)
-                url = urljoin(self.base_url, a["href"])
-            div = h3.find_next_sibling("div", attrs={"class": "stream-item-info"})
-            if div:
-                aut = self.tag_to_string(div).replace("Magazine Article ", "")
-                auth = re.sub(r"(?<=\w)([A-Z])", r", \1", aut)
-            dek = h3.find_next_sibling("div", attrs={"class": "dek"})
-            if dek:
-                des = self.tag_to_string(dek)
-            desc = des + " |" + auth.title()
-            sec = (
+            article_ele = h3.find_next_sibling(
+                "div", attrs={"class": "stream-item-info"}
+            )
+            if not article_ele:
+                continue
+
+            articles = []
+            title = self.tag_to_string(article_link_ele)
+            url = urljoin(self.base_url, article_link_ele["href"])
+
+            authors_ele = article_ele.select("ul.byline li")
+            authors = ", ".join([self.tag_to_string(a) for a in authors_ele])
+
+            article_desc = ""
+            dek_ele = h3.find_next_sibling("div", attrs={"class": "dek"})
+            if dek_ele:
+                article_desc = self.tag_to_string(dek_ele) + " | " + authors
+            section_ele = (
                 h3.findParent("li")
                 .find_previous_sibling("div", **classes("stream-section-label"))
                 .find("h4")
             )
-            section_title = self.tag_to_string(sec).title()
+            section_title = self.tag_to_string(section_ele).title()
             self.log(section_title)
             self.log("\t", title)
-            self.log("\t", desc)
+            self.log("\t", article_desc)
             self.log("\t\t", url)
 
-            articles.append({"title": title, "url": url, "description": desc})
+            articles.append({"title": title, "url": url, "description": article_desc})
             if articles:
                 if section_title not in feeds:
                     feeds[section_title] = []
