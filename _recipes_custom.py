@@ -12,6 +12,7 @@ categories_sort: List[str] = ["Examples", "Example Magazines"]
 
 @dataclass
 class CustomRecipe(Recipe):
+    # Use a different title date format from default
     def __post_init__(self):
         self.title_date_format = "%b %-d, %Y"
 
