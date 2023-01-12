@@ -11,10 +11,10 @@ categories_sort: List[str] = ["Examples", "Example Magazines"]
 
 
 @dataclass
-class CustomRecipe(Recipe):
+class CustomTitleDateFormatRecipe(Recipe):
     # Use a different title date format from default
     def __post_init__(self):
-        self.title_date_format = "%b %-d, %Y"
+        self.title_date_format = "%Y-%m-%d"
 
 
 recipes: List[Recipe] = [
@@ -51,8 +51,8 @@ recipes: List[Recipe] = [
         category="Example Magazines",
         tags=["news"]
     ),
-    # custom recipe with different default title_date_format
-    CustomRecipe(
+    # newsrack builtin recipe with different default title_date_format
+    CustomTitleDateFormatRecipe(
         recipe="mit-tech-review",
         slug="mit-tech-review-feed",
         src_ext="epub",
