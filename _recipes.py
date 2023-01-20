@@ -187,6 +187,19 @@ recipes: List[Recipe] = [
         ),
     ),
     Recipe(
+        recipe="fulcrum-sg",
+        slug="fulcrum-sg",
+        src_ext="mobi",
+        target_ext=["epub"],
+        category="Online Magazines",
+        tags=["asia"],
+        enable_on=onlyon_weekdays([0, 1, 2, 3, 4], 8)
+        and onlyat_hours(list(range(8, 20)), 8),
+        cover_options=CoverOptions(
+            logo_path_or_url="https://i0.wp.com/fulcrum.sg/wp-content/uploads/logo.png",
+        ),
+    ),
+    Recipe(
         recipe="guardian",
         slug="guardian",
         src_ext="mobi",
@@ -451,6 +464,16 @@ recipes: List[Recipe] = [
         cover_options=CoverOptions(
             logo_path_or_url="https://cdn.shopify.com/s/files/1/0280/0258/2595/files/SCMP_Logo_2018_540x.png"
         ),
+    ),
+    Recipe(
+        recipe="smithsonian-magazine",
+        slug="smithsonian-magazine",
+        src_ext="mobi",
+        target_ext=["epub"],
+        category="Magazines",
+        enable_on=onlyon_days(list(range(1, 14)), -5)
+        and onlyat_hours(list(range(10, 19)), -5),
+        overwrite_cover=False,
     ),
     Recipe(
         recipe="spectator-magazine",
