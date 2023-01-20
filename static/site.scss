@@ -71,6 +71,7 @@ h1 {
     font-size: 0.8em;
     padding: 0.2em;
     width: 100%;
+    box-sizing: border-box;
 }
 #search-button {
     font-size: 0.8em;
@@ -394,19 +395,33 @@ body.nonkindle {
 
 @media (max-width: 576px) {
     body.nonkindle {
-        ol.books li {
-            span.title {
-                display: block;
-                margin-bottom: 0.2em;
-            }
+        margin-left: 0;
+        margin-right: 0;
 
-            .book:first-of-type {
-                margin-left: 0;
-            }
+        #search-form-container {
+            margin-left: 0.7em;
+            margin-right: 0.7em;
+        }
+        .category-container {
+            border: 0;
+        }
 
-            .pub-date {
-                padding-bottom: 0.1em;
-                margin-bottom: 0.2em;
+        ol.books {
+            margin-top: 1em;
+            li {
+                span.title {
+                    display: block;
+                    margin-bottom: 0.2em;
+                }
+
+                .book:first-of-type {
+                    margin-left: 0;
+                }
+
+                .pub-date {
+                    padding-bottom: 0.1em;
+                    margin-bottom: 0.2em;
+                }
             }
         }
     }
