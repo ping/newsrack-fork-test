@@ -6,12 +6,19 @@
 """
 github.blog
 """
+import os
+import sys
+
+# custom include to share code between recipes
+sys.path.append(os.environ["recipes_includes"])
+from recipes_shared import BasicNewsrackRecipe, format_title
+
 from calibre.web.feeds.news import BasicNewsRecipe
 
 _name = "GitHub Blog"
 
 
-class GitHubBlog(BasicNewsRecipe):
+class GitHubBlog(BasicNewsrackRecipe, BasicNewsRecipe):
     title = _name
     description = (
         "Updates, ideas, and inspiration from GitHub to help "
@@ -23,21 +30,14 @@ class GitHubBlog(BasicNewsRecipe):
     oldest_article = 7  # days
     max_articles_per_feed = 7
     use_embedded_content = True
-    no_stylesheets = True
-    remove_javascript = True
     encoding = "utf-8"
     auto_cleanup = False
-    timefmt = ""
-    pub_date = None  # custom publication date
 
     feeds = [
-        ("GitHub Blog", "https://github.blog/feed/"),
+        (_name, "https://github.blog/feed/"),
     ]
 
     def populate_article_metadata(self, article, __, _):
         if (not self.pub_date) or article.utctime > self.pub_date:
             self.pub_date = article.utctime
-            self.title = f"{_name}: {article.utctime:%-d %b, %Y}"
-
-    def publication_date(self):
-        return self.pub_date
+            self.title = format_title(_name, article.utctime)
