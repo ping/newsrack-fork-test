@@ -4,7 +4,7 @@ from typing import List
 from _recipe_utils import Recipe, CoverOptions, onlyon_weekdays
 
 # Define the categories display order, optional
-categories_sort: List[str] = ["Examples", "Example Magazines"]
+categories_sort: List[str] = ["Examples", "Examples 2"]
 
 # Define your custom recipes list here
 # Example: https://github.com/ping/newsrack-fork-test/blob/custom/_recipes_custom.py
@@ -30,17 +30,17 @@ recipes: List[Recipe] = [
             text_colour="white",
             background_colour="black",
         ),  # generate black cover with white text
-        tags=["example"]
+        tags=["custom-recipe"]
     ),
     # Builtin Calibre recipe example
     Recipe(
-        recipe="Macrobusiness",
-        name="Macrobusiness",
-        slug="macrobusiness",
+        recipe="The Asian Review of Books",
+        name="The Asian Review of Books",
+        slug="asian-review-books",
         src_ext="epub",
         category="Examples",
         enable_on=onlyon_weekdays([1, 3, 5], 10),  # tues, thurs, sat
-        tags=["business"]
+        tags=["calibre-builtin"]
     ),
     # newsrack builtin recipe
     Recipe(
@@ -48,17 +48,17 @@ recipes: List[Recipe] = [
         slug="vox",
         src_ext="mobi",
         target_ext=["epub"],
-        category="Example Magazines",
-        tags=["news"]
+        category="Examples 2",
+        tags=["newsrack-builtin"]
     ),
     # newsrack builtin recipe with different default title_date_format
     CustomTitleDateFormatRecipe(
         recipe="mit-tech-review",
         slug="mit-tech-review-feed",
         src_ext="epub",
-        category="Example Magazines",
+        category="Examples 2",
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4, 5], -4),
-        tags=["technology"],
+        tags=["newsrack-builtin"],
     ),
 
 ]
