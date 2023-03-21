@@ -1,1 +1,27 @@
 // Define your own custom site css here
+
+$custom-dark-link-color: #ffc67c;
+
+@media (prefers-color-scheme: dark) {
+  body.nonkindle {
+    a {
+      color: $custom-dark-link-color;
+
+      &:hover {
+        color: lighten($custom-dark-link-color, 10%);
+      }
+
+      &:visited {
+        color: darken($custom-dark-link-color, 10%);
+      }
+    }
+
+    .book {
+      a.reader {
+        &:hover {
+          color: lighten($custom-dark-link-color, 10%);
+        }
+      }
+    }
+  }
+}
