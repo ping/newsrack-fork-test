@@ -12,4 +12,4 @@ The customisations shown here should also work on an actual fork.
 - Change default branch to [`custom`](https://github.com/ping/newsrack-fork-test/tree/custom)
 - Enable Pages in Repository settings to deploy from GitHub Actions
 
-Compare [main vs custom](https://github.com/ping/newsrack-fork-test/compare/main...custom).
+Compare [main vs custom](https://github.com/ping/newsrack-fork-test/compare/main...custom#files_bucket) changes.
