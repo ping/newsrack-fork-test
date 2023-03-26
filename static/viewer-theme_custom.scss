@@ -15,5 +15,9 @@ $custom-dark-link-color: #ffc67c;
         color: darken($custom-dark-link-color, 10%);
       }
     }
+
+    table.touchscreen_navbar td a {
+      color: $custom-dark-link-color;
+    }
   }
 }
