@@ -52,6 +52,10 @@ class WordPressNewsrackRecipe(BasicNewsrackRecipe):
     use_embedded_content = False
     auto_cleanup = False  # don't clean up because it messes up the embed code and sometimes ruins the og-link logic
 
+    @staticmethod
+    def parse_datetime(date_string):
+        return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S")
+
     def extract_authors(self, post):
         try:
             post_authors = [
@@ -64,26 +68,23 @@ class WordPressNewsrackRecipe(BasicNewsrackRecipe):
     def extract_categories(self, post):
         categories = []
         if post.get("categories"):
-            try:
-                for terms in post.get("_embedded", {}).get("wp:term", []):
-                    categories.extend(
-                        [t["name"] for t in terms if t["taxonomy"] == "category"]
-                    )
-            except (KeyError, TypeError):
-                pass
+            categories = [t["name"] for t in self.extract_terms(post, "category")]
         return categories
 
     def extract_tags(self, post):
         tags = []
         if post.get("tags"):
-            try:
-                for terms in post.get("_embedded", {}).get("wp:term", []):
-                    tags.extend(
-                        [t["name"] for t in terms if t["taxonomy"] == "post_tag"]
-                    )
-            except (KeyError, TypeError):
-                pass
+            tags = [t["name"] for t in self.extract_terms(post, "post_tag")]
         return tags
+
+    def extract_terms(self, post, taxonomy):
+        terms = []
+        try:
+            for wp_terms in post.get("_embedded", {}).get("wp:term", []):
+                terms.extend([t for t in wp_terms if t["taxonomy"] == taxonomy])
+        except (KeyError, TypeError):
+            pass
+        return terms
 
     def populate_article_metadata(self, article, soup, _):
         # pick up the og link from preprocess_raw_html() and set it as url instead of the api endpoint
