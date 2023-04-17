@@ -244,6 +244,17 @@ recipes: List[Recipe] = [
         ),
     ),
     Recipe(
+        recipe="kirkus",
+        slug="kirkus",
+        src_ext="mobi",
+        target_ext=["epub"],
+        category="Arts & Culture",
+        tags=["books", "reviews"],
+        overwrite_cover=False,
+        enable_on=onlyat_hours(list(range(0, 6)))
+        and (first_n_days_of_month(3) or last_n_days_of_month(3)),
+    ),
+    Recipe(
         recipe="knowable-magazine",
         slug="knowable-magazine",
         src_ext="mobi",
@@ -407,7 +418,7 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
-        timeout=900,
+        timeout=1200,
         retry_attempts=0,
         enable_on=onlyat_hours(list(range(4, 8))),
         cover_options=CoverOptions(
@@ -612,6 +623,19 @@ recipes: List[Recipe] = [
         cover_options=CoverOptions(
             logo_path_or_url="https://www.washingtonpost.com/sf/brand-connect/dell-technologies/the-economics-of-change/media/wp_logo_black.png"
         ),
+        enable_on=onlyat_hours(list(range(0, 8)) + list(range(12, 24))),
+    ),
+    Recipe(
+        recipe="wapo-paper",
+        slug="wapo-print",
+        src_ext="mobi",
+        target_ext=["epub"],
+        timeout=600,
+        category="News",
+        cover_options=CoverOptions(
+            logo_path_or_url="https://www.washingtonpost.com/sf/brand-connect/dell-technologies/the-economics-of-change/media/wp_logo_black.png"
+        ),
+        enable_on=onlyat_hours(list(range(8, 12))),
     ),
     Recipe(
         recipe="wired",
