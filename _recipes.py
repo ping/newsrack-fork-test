@@ -162,7 +162,7 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         overwrite_cover=False,
         category="Magazines",
-        enable_on=(first_n_days_of_month(7, -4) or last_n_days_of_month(7, -4))
+        enable_on=(first_n_days_of_month(4, -4) or last_n_days_of_month(10, -4))
         and onlyat_hours(list(range(8, 22)), -4),
     ),
     Recipe(
@@ -259,7 +259,7 @@ recipes: List[Recipe] = [
         slug="knowable-magazine",
         src_ext="mobi",
         target_ext=["epub"],
-        category="Magazines",
+        category="Online Magazines",
         tags=["science"],
         cover_options=CoverOptions(logo_path_or_url="https://i.imgur.com/OMxGtzQ.jpg"),
     ),
@@ -370,7 +370,7 @@ recipes: List[Recipe] = [
         target_ext=["epub"],
         category="Magazines",
         overwrite_cover=False,
-        enable_on=(first_n_days_of_month(7) or last_n_days_of_month(7))
+        enable_on=(first_n_days_of_month(4) or last_n_days_of_month(10))
         and onlyat_hours(list(range(8, 16))),
     ),
     Recipe(
@@ -406,7 +406,7 @@ recipes: List[Recipe] = [
         timeout=900,
         retry_attempts=0,
         enable_on=onlyat_hours(
-            list(range(0, 4)) + list(range(8, 18)) + list(range(22, 24))
+            list(range(0, 8)) + list(range(12, 18)) + list(range(22, 24))
         ),
         cover_options=CoverOptions(
             logo_path_or_url="https://static01.nyt.com/newsgraphics/2015/12/23/masthead-2016/8118277965bda8228105578895f2f4a7aeb22ce2/nyt-logo.png"
@@ -420,7 +420,7 @@ recipes: List[Recipe] = [
         category="News",
         timeout=1200,
         retry_attempts=0,
-        enable_on=onlyat_hours(list(range(4, 8))),
+        enable_on=onlyat_hours(list(range(8, 12))),
         cover_options=CoverOptions(
             logo_path_or_url="https://static01.nyt.com/newsgraphics/2015/12/23/masthead-2016/8118277965bda8228105578895f2f4a7aeb22ce2/nyt-logo.png"
         ),
