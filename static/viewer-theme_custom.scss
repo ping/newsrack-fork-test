@@ -1,23 +1,5 @@
 // Define your own custom viewer theme css here
 
-$custom-dark-link-color: #ffc67c;
-
-@media (prefers-color-scheme: dark) {
-  .viewer-theme {
-    a {
-      color: $custom-dark-link-color;
-
-      &:hover {
-        color: lighten($custom-dark-link-color, 10%);
-      }
-
-      &:visited {
-        color: darken($custom-dark-link-color, 10%);
-      }
-    }
-
-    table.touchscreen_navbar td a {
-      color: $custom-dark-link-color;
-    }
-  }
+.viewer-theme {
+  font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
 }
