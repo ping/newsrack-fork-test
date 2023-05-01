@@ -1,1 +1,5 @@
 // Define your own custom colours css here
+
+$dark-link-color: #ffc67c;
+$dark-link-hover-color: lighten($dark-link-color, 10%);
+$dark-link-visited-color: darken($dark-link-color, 10%);
