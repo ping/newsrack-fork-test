@@ -1,10 +1,17 @@
 from dataclasses import dataclass
 from typing import List
 
-from _recipe_utils import Recipe, CoverOptions, onlyon_weekdays
+from _recipe_utils import Recipe, CoverOptions, onlyon_weekdays, default_conv_options
 
 # Define the categories display order, optional
 categories_sort: List[str] = ["Examples", "Examples 2"]
+
+# Custom conversion options: if you're not overwriting all the format options,
+# it's probably better to work off a copy of the default
+custom_conversion_options = default_conv_options.copy()
+custom_conversion_options.update(
+    {"mobi": ["--output-profile=kindle", "--mobi-file-type=both"]}
+)
 
 # Define your custom recipes list here
 # Example: https://github.com/ping/newsrack-fork-test/blob/custom/_recipes_custom.py
@@ -30,7 +37,7 @@ recipes: List[Recipe] = [
             text_colour="white",
             background_colour="black",
         ),  # generate black cover with white text
-        tags=["custom-recipe"]
+        tags=["custom-recipe"],
     ),
     # Builtin Calibre recipe example
     Recipe(
@@ -40,7 +47,7 @@ recipes: List[Recipe] = [
         src_ext="epub",
         category="Examples",
         enable_on=onlyon_weekdays([1, 3, 5], 10),  # tues, thurs, sat
-        tags=["calibre-builtin"]
+        tags=["calibre-builtin"],
     ),
     # newsrack builtin recipe
     Recipe(
@@ -49,7 +56,8 @@ recipes: List[Recipe] = [
         src_ext="mobi",
         target_ext=["epub"],
         category="Examples 2",
-        tags=["newsrack-builtin"]
+        tags=["newsrack-builtin"],
+        conv_options=custom_conversion_options,
     ),
     # newsrack builtin recipe with different default title_date_format
     CustomTitleDateFormatRecipe(
@@ -60,5 +68,4 @@ recipes: List[Recipe] = [
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4, 5], -4),
         tags=["newsrack-builtin"],
     ),
-
 ]
