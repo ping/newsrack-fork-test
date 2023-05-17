@@ -18,7 +18,7 @@ from calibre.web.feeds.news import BasicNewsRecipe
 from calibre.utils.cleantext import clean_ascii_chars
 
 _name = "Washington Post (Print)"
-_skip_sections = ["Sports", "Style", "Weekend"]
+_skip_sections = ["sports", "style", "weekend"]
 
 
 class TheWashingtonPostPrint(BasicNewsrackRecipe, BasicNewsRecipe):
@@ -36,6 +36,7 @@ class TheWashingtonPostPrint(BasicNewsrackRecipe, BasicNewsRecipe):
     encoding = "utf-8"
     language = "en"
     simultaneous_downloads = 8
+    compress_news_images_auto_size = 8
 
     oldest_article = 1
     max_articles_per_feed = 25
@@ -72,7 +73,7 @@ class TheWashingtonPostPrint(BasicNewsrackRecipe, BasicNewsRecipe):
                 continue
             if node_type == "text":
                 para_ele = soup.new_tag("p")
-                para_ele.append(BeautifulSoup(c["content"]))
+                para_ele.append(BeautifulSoup(c["content"], features="html.parser"))
                 parent_element.append(para_ele)
             elif node_type == "image":
                 figure_ele = soup.new_tag("figure", attrs={"class": "figure"})
@@ -98,7 +99,7 @@ class TheWashingtonPostPrint(BasicNewsrackRecipe, BasicNewsRecipe):
                 parent_element.append(container_ele)
             elif node_type == "header":
                 header_ele = soup.new_tag(f'h{c["level"]}')
-                header_ele.string = c["content"]
+                header_ele.append(BeautifulSoup(c["content"], features="html.parser"))
                 parent_element.append(header_ele)
             elif node_type == "correction":
                 para_ele = soup.new_tag("p", attrs={"class": "correction"})
@@ -132,12 +133,14 @@ class TheWashingtonPostPrint(BasicNewsrackRecipe, BasicNewsRecipe):
                 ) or c.get("header")
                 if header_string:
                     header_ele = soup.new_tag("h3")
-                    header_ele.string = header_string
+                    header_ele.append(
+                        BeautifulSoup(header_string, features="html.parser")
+                    )
                     container_ele.append(header_ele)
                 ol_ele = soup.new_tag("ol")
                 for i in c.get("items", []):
                     li_ele = soup.new_tag("li")
-                    li_ele.append(BeautifulSoup(i["content"]))
+                    li_ele.append(BeautifulSoup(i["content"], features="html.parser"))
                     ol_ele.append(li_ele)
                 container_ele.append(ol_ele)
                 parent_element.append(container_ele)
@@ -151,7 +154,9 @@ class TheWashingtonPostPrint(BasicNewsrackRecipe, BasicNewsRecipe):
 
                 header_ele = soup.new_tag("h3")
                 header_ele.append(
-                    BeautifulSoup(c.get("headlines", {}).get("basic", ""))
+                    BeautifulSoup(
+                        c.get("headlines", {}).get("basic", ""), features="html.parser"
+                    )
                 )
                 container_ele.append(header_ele)
 
@@ -163,10 +168,11 @@ class TheWashingtonPostPrint(BasicNewsrackRecipe, BasicNewsRecipe):
                     f"""<div class="article-meta">
                         <span class="author"></span>
                         <span class="published-dt">{post_date:%-I:%M%p %-d %B, %Y}</span>
-                    </div>"""
+                    </div>""",
+                    features="html.parser",
                 )
                 authors = [a["name"] for a in c.get("credits", {}).get("by", [])]
-                meta_ele.find("span", class_="author").string = ", ".join(authors)
+                meta_ele.find("span", class_="author").append(", ".join(authors))
                 container_ele.append(meta_ele)
                 self._extract_child_nodes(
                     c["content_elements"], container_ele, soup, url
@@ -228,19 +234,19 @@ class TheWashingtonPostPrint(BasicNewsrackRecipe, BasicNewsRecipe):
         </body></html>"""
         new_soup = BeautifulSoup(html)
         title_ele = new_soup.new_tag("title")
-        title_ele.string = title
+        title_ele.append(title)
         new_soup.head.append(title_ele)
-        new_soup.body.article.h1.string = title
+        new_soup.body.article.h1.append(title)
         if description:
             new_soup.body.article["data-description"] = description
         if content.get("subheadlines", {}).get("basic", ""):
-            new_soup.find("div", class_="sub-headline").string = content[
-                "subheadlines"
-            ]["basic"]
+            new_soup.find("div", class_="sub-headline").append(
+                content["subheadlines"]["basic"]
+            )
         else:
             new_soup.find("div", class_="sub-headline").decompose()
         authors = [a["name"] for a in content.get("credits", {}).get("by", [])]
-        new_soup.find("span", class_="author").string = ", ".join(authors)
+        new_soup.find("span", class_="author").append(", ".join(authors))
         self._extract_child_nodes(
             content.get("content_elements"), new_soup.body.article, new_soup, url
         )
@@ -254,18 +260,20 @@ class TheWashingtonPostPrint(BasicNewsrackRecipe, BasicNewsRecipe):
 
     def parse_index(self):
         soup = self.index_to_soup(self.index)
+        today_ele = soup.find("h2")
+        if today_ele:
+            self.title = f"{_name}: {self.tag_to_string(today_ele)}"
         articles = {}
-        for section in soup.find_all(class_="todays-content"):
-            today_ele = section.find(class_="todays-date")
-            if today_ele:
-                self.title = f"{_name}: {self.tag_to_string(today_ele)}"
-                today_ele.extract()
-            section_name = self.tag_to_string(section.find(class_="heading")).strip()
-            if section_name in _skip_sections:
+        for section in soup.find_all("section", attrs={"id": True}):
+            section_name = self.tag_to_string(section.find("label")).strip()
+            if section_name.lower() in _skip_sections:
                 continue
             section_articles = []
             self.log(f"Section: {section_name}")
-            for link in section.find_all("a", class_="headline"):
+            for link in section.find_all("a", attrs={"href": True}):
+                if link.find("img"):
+                    # cover page link
+                    continue
                 if link["href"] in (
                     "https://www.washingtonpost.com/",
                     "https://www.washingtonpost.com/local/",
