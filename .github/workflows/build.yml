@@ -72,7 +72,7 @@ jobs:
         run: |
           tag="$(curl -L --retry 3 --silent --fail 'https://api.github.com/repos/kovidgoyal/calibre/releases/latest' | jq -r .tag_name)" && \
           echo "calibre_ver=${tag#*v}" && \
-          echo "calibre_ver=6.17.0" >> $GITHUB_ENV
+          echo "calibre_ver=${tag#*v}" >> $GITHUB_ENV
 
       - name: Calibre binaries cache
         id: cache-bin
