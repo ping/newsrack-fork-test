@@ -127,7 +127,7 @@ class WSJ(BasicNewsrackRecipe, BasicNewsRecipe):
         sections = []
 
         for d in range(3):
-            issue_date = datetime.today() - timedelta(days=d)
+            issue_date = datetime.now(tz=timezone.utc) - timedelta(days=d)
             issue_url = (
                 f'https://www.wsj.com/print-edition/{issue_date.strftime("%Y%m%d")}'
             )
@@ -166,6 +166,19 @@ class WSJ(BasicNewsrackRecipe, BasicNewsRecipe):
                 else:
                     if attempt < max_retry_attempts:
                         self._do_wait("Unable to determine issue date")
+                    else:
+                        if os.environ.get("recipe_debug_folder", ""):
+                            recipe_folder = os.path.join(
+                                os.environ["recipe_debug_folder"], "wsj-paper"
+                            )
+                            if not os.path.exists(recipe_folder):
+                                os.makedirs(recipe_folder)
+                            debug_output_file = os.path.join(recipe_folder, "frontpage")
+                            if not debug_output_file.endswith(".html"):
+                                debug_output_file += ".html"
+                            self.log(f'Writing debug raw html to "{debug_output_file}"')
+                            with open(debug_output_file, "w", encoding="utf-8") as f:
+                                f.write(str(soup))
 
         if not sections:
             self.abort_recipe_processing("Unable to find issue.")
