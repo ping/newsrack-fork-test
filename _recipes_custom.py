@@ -1,7 +1,14 @@
 from dataclasses import dataclass
 from typing import List
 
-from _recipe_utils import Recipe, CoverOptions, onlyon_weekdays, default_conv_options
+from _recipe_utils import (
+    Recipe,
+    CoverOptions,
+    onlyon_weekdays,
+    default_conv_options,
+    first_n_days_of_month,
+    last_n_days_of_month,
+)
 
 # Define the categories display order, optional
 categories_sort: List[str] = ["Examples", "Examples 2"]
@@ -61,11 +68,12 @@ recipes: List[Recipe] = [
     ),
     # newsrack builtin recipe with different default title_date_format
     CustomTitleDateFormatRecipe(
-        recipe="mit-tech-review",
-        slug="mit-tech-review-feed",
+        recipe="mit-tech-review-magazine",
+        slug="mit-tech-review-magazine",
         src_ext="epub",
         category="Examples 2",
-        enable_on=onlyon_weekdays([0, 1, 2, 3, 4, 5], -4),
+        overwrite_cover=False,
+        enable_on=first_n_days_of_month(7, -5) or last_n_days_of_month(7, -5),
         tags=["newsrack-builtin"],
     ),
 ]
