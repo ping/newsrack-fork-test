@@ -41,3 +41,6 @@ class GitHubBlog(BasicNewsrackRecipe, BasicNewsRecipe):
         if (not self.pub_date) or article.utctime > self.pub_date:
             self.pub_date = article.utctime
             self.title = format_title(_name, article.utctime)
+
+    def parse_feeds(self):
+        return self.group_feeds_by_date()
