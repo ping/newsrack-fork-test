@@ -91,7 +91,7 @@ recipes: List[Recipe] = [
         enable_on=onlyon_weekdays([0, 1, 2, 3, 4], -4) and last_n_days_of_month(14, -4),
         tags=["editorial", "commentary"],
     ),
-    # Still blocked from DC IPs
+    # Still blocked from DC IPs: 2023-07-20
     # Recipe(
     #     recipe="bloomberg-businessweek",
     #     slug="bloomberg-businessweek",
@@ -100,7 +100,7 @@ recipes: List[Recipe] = [
     #     tags=["business"],
     #     overwrite_cover=False,
     #     enable_on=onlyon_weekdays([5]) and onlyat_hours(list(range(2, 8))),
-    #     timeout=600,
+    #     timeout=300,
     # ),
     Recipe(
         recipe="bookforum-magazine",
@@ -195,6 +195,26 @@ recipes: List[Recipe] = [
         category="Magazines",
         enable_on=(first_n_days_of_month(4, -4) or last_n_days_of_month(10, -4))
         and onlyat_hours(list(range(8, 22)), -4),
+    ),
+    Recipe(
+        recipe="foreign-policy",
+        slug="foreign-policy",
+        src_ext="mobi",
+        target_ext=["epub"],
+        category="Online Magazines",
+        cover_options=CoverOptions(
+            logo_path_or_url="https://foreignpolicy.com/wp-content/themes/foreign-policy-2017/assets/src/images/logos/favicon-256.png"
+        ),
+        enable_on=onlyat_hours(list(range(18, 23)), -4),
+    ),
+    Recipe(
+        recipe="foreign-policy-magazine",
+        slug="foreign-policy-magazine",
+        src_ext="mobi",
+        target_ext=["epub"],
+        category="Magazines",
+        overwrite_cover=False,
+        enable_on=onlyon_weekdays([5, 6], -4) and onlyat_hours(list(range(0, 6)), -4),
     ),
     Recipe(
         recipe="ft",
@@ -480,6 +500,15 @@ recipes: List[Recipe] = [
             logo_path_or_url="https://static01.nyt.com/newsgraphics/2015/12/23/masthead-2016/8118277965bda8228105578895f2f4a7aeb22ce2/nyt-logo.png"
         ),
         tags=["literature", "books"],
+    ),
+    Recipe(
+        recipe="nytimes-magazine",
+        slug="nytimes-magazine",
+        src_ext="mobi",
+        target_ext=["epub"],
+        category="Magazines",
+        overwrite_cover=False,
+        enable_on=onlyon_weekdays([5]) and onlyat_hours(list(range(18, 22))),
     ),
     Recipe(
         recipe="paris-review-blog",

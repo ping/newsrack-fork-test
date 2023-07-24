@@ -27,13 +27,6 @@ class NYTimesBooks(NYTRecipe, BasicNewsrackRecipe, BasicNewsRecipe):
     publication_type = "newspaper"
     oldest_article = 7  # days
     max_articles_per_feed = 25
-    use_embedded_content = False
-
-    delay = 2
-    bot_blocked = False
-
-    auto_cleanup = False
-    scale_news_images = (600, 600)
 
     remove_attributes = ["style", "font"]
     remove_tags_before = [dict(id="story")]

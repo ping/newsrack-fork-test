@@ -7,11 +7,13 @@
 # Bloomberg blocks non-residential IPs
 
 import json
+import random
 import re
+import time
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
 
-from calibre import browser, iswindows
+from calibre import browser, iswindows, random_user_agent
 from calibre.ebooks.BeautifulSoup import BeautifulSoup
 from calibre.utils.date import parse_date
 from calibre.web.feeds.news import BasicNewsRecipe
@@ -42,7 +44,8 @@ class BloombergNews(BasicNewsRecipe):
     # - limit the number of feeds
     # - or max_articles_per_feed
     # - or increase delay
-    delay = 2
+    # delay = 0.1
+    simultaneous_downloads = 2
     oldest_article = 1
     max_articles_per_feed = 25
 
@@ -88,6 +91,9 @@ class BloombergNews(BasicNewsRecipe):
     # Sitemap urls can be extracted from https://www.bloomberg.com/robots.txt
     feeds = [
         ("News", "https://www.bloomberg.com/feeds/sitemap_news.xml"),
+        ("Business", "https://www.bloomberg.com/feeds/bbiz/sitemap_news.xml"),
+        ("Technology", "https://www.bloomberg.com/feeds/technology/sitemap_news.xml"),
+        ("Equality", "https://www.bloomberg.com/feeds/equality/sitemap_news.xml"),
     ]
 
     # We send no cookies to avoid triggering bot detection
@@ -98,11 +104,23 @@ class BloombergNews(BasicNewsRecipe):
         return self.get_browser()
 
     def open_novisit(self, *args, **kwargs):
+        target_url = args[0]
+        if urlparse(target_url).hostname != "assets.bwbx.io":
+            time.sleep(random.choice([r * 0.5 for r in range(1, 5)]))
         if self.bot_blocked:
-            self.log.warn(f"Block detected. Skipping {args[0]}")
+            self.log.warn(f"Block detected. Skipping {target_url}")
             # Abort article without making actual request
-            self.abort_article(f"Block detected. Skipped {args[0]}")
+            self.abort_article(f"Block detected. Skipped {target_url}")
         br = browser()
+        br.addheaders = [
+            ("referer", "https://www.google.com/"),
+            (
+                "accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            ),
+            ("accept-language", "en,en-US;q=0.5"),
+            ("connection", "keep-alive"),
+        ]
         br.set_handle_redirect(False)
         try:
             res = br.open_novisit(*args, **kwargs)
@@ -116,7 +134,7 @@ class BloombergNews(BasicNewsRecipe):
                 )
             if is_redirected_to_challenge or (hasattr(e, "code") and e.code == 307):
                 self.bot_blocked = True
-                err_msg = f"Blocked by bot detection: {args[0]}"
+                err_msg = f"Blocked by bot detection: {target_url}"
                 self.log.warn(err_msg)
                 self.abort_recipe_processing(err_msg)
                 self.abort_article(err_msg)
@@ -147,11 +165,17 @@ class BloombergNews(BasicNewsRecipe):
         if content_type == "heading" and content.get("data", {}).get("level"):
             return soup.new_tag(f'h{content["data"]["level"]}')
         if content_type == "paragraph":
-            p = soup.new_tag("p")
-            return p
+            return soup.new_tag("p")
         if content_type == "br":
-            br = soup.new_tag("br")
-            return br
+            return soup.new_tag("br")
+        if content_type == "quote":
+            return soup.new_tag("blockquote")
+        if content_type in ("div", "byTheNumbers"):
+            div = soup.new_tag("div")
+            css_class = content.get("data", {}).get("class")
+            if css_class:
+                div["class"] = css_class
+            return div
         if content_type == "aside":
             return soup.new_tag("blockquote")
         if content_type == "embed" and content.get("iframeData", {}).get("html"):
@@ -229,6 +253,28 @@ class BloombergNews(BasicNewsRecipe):
                     caption.append(attachment["title"])
                     div.append(caption)
                 return div
+        if content_type == "embed" and content.get("href"):
+            div = soup.new_tag("div", attrs={"class": content_type})
+            a_ele = soup.new_tag("a", attrs={"href": content["href"]})
+            a_ele.append(content["href"])
+            div.append(a_ele)
+            return div
+        if content_type == "tabularData":
+            return soup.new_tag("table")
+        if content_type == "columns":
+            thead = soup.new_tag("thead")
+            tr = soup.new_tag("tr")
+            for defn in content.get("data", {}).get("definitions", []):
+                if defn.get("title"):
+                    th = soup.new_tag("th")
+                    th.append(defn["title"])
+                    tr.append(th)
+            thead.append(tr)
+            return thead
+        if content_type == "row":
+            return soup.new_tag("tr")
+        if content_type == "cell":
+            return soup.new_tag("td")
 
         self.log.warning(f"Unknown content type: {content_type}: {json.dumps(content)}")
         return None
