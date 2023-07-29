@@ -5,9 +5,13 @@
 
 import json
 import os
+import random
 import sys
+import time
 from collections import defaultdict
 from http.cookiejar import Cookie
+from os.path import splitext
+from urllib.parse import urlparse
 
 # custom include to share code between recipes
 sys.path.append(os.environ["recipes_includes"])
@@ -139,17 +143,19 @@ _name = "Economist"
 
 
 class Economist(BasicNewsrackRecipe, BasicNewsRecipe):
-
     title = _name
-    language = "en"
-    encoding = "utf-8"
-
     __author__ = "Kovid Goyal"
     description = (
         "Global news and current affairs from a European"
         " perspective. Best downloaded on Friday mornings (GMT)"
         " https://www.economist.com/printedition"
     )
+    language = "en"
+    encoding = "utf-8"
+
+    masthead_url = "https://www.economist.com/assets/the-economist-logo.png"
+    needs_subscription = False
+
     extra_css = """
         .headline {font-size: x-large;}
         h2 { font-size: medium; font-weight: bold;  }
@@ -231,11 +237,8 @@ class Economist(BasicNewsrackRecipe, BasicNewsRecipe):
     keep_only_tags = [dict(name="article", id=lambda x: not x)]
     remove_attributes = ["data-reactid", "width", "height"]
     # economist.com has started throttling with HTTP 429
-    delay = 1
-
-    masthead_url = "https://www.economist.com/assets/the-economist-logo.png"
-
-    needs_subscription = False
+    delay = 0
+    simultaneous_downloads = 1
 
     def __init__(self, *args, **kwargs):
         BasicNewsRecipe.__init__(self, *args, **kwargs)
@@ -247,8 +250,6 @@ class Economist(BasicNewsrackRecipe, BasicNewsRecipe):
             self.log.warn(
                 "Kindle Output profile being used, reducing image quality to keep file size below amazon email threshold"
             )
-
-    def get_browser(self):
         br = BasicNewsRecipe.get_browser(self)
         # Add a cookie indicating we have accepted Economist's cookie
         # policy (needed when running from some European countries)
@@ -273,7 +274,29 @@ class Economist(BasicNewsrackRecipe, BasicNewsRecipe):
         )
         br.cookiejar.set_cookie(ck)
         br.set_handle_gzip(True)
-        return br
+        self._br = br
+
+    # We send no cookies to avoid triggering bot detection
+    def get_browser(self, *args, **kwargs):
+        return self
+
+    def clone_browser(self, *args, **kwargs):
+        return self.get_browser()
+
+    def open_novisit(self, *args, **kwargs):
+        target_url = args[0]
+        if "/interactive/" in target_url:
+            msg = "Skip interactive article: %s" % target_url
+            self.log.warning(msg)
+            self.abort_article(msg)
+        p, ext = splitext(urlparse(target_url).path)
+        if not ext:
+            # not an asset, e.g. .png .jpg
+            time.sleep(random.choice([r for r in range(1, 3)]))
+
+        return self._br.open_novisit(*args, **kwargs)
+
+    open = open_novisit
 
     def preprocess_raw_html(self, raw, _):
         root = parse(raw)

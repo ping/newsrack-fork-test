@@ -6,7 +6,9 @@ import os
 import sys
 from datetime import datetime
 from functools import cmp_to_key
-from urllib.parse import urljoin, urlencode, urlsplit
+from urllib.parse import urljoin, urlencode, urlsplit, urlparse
+
+from calibre.ebooks.BeautifulSoup import BeautifulSoup
 
 # custom include to share code between recipes
 sys.path.append(os.environ["recipes_includes"])
@@ -15,6 +17,7 @@ from recipes_shared import BasicNewsrackRecipe, get_date_format
 from calibre.web.feeds.news import BasicNewsRecipe
 
 _name = "The New Republic Magazine"
+_issue_url = ""  # example: https://newrepublic.com/magazine/may-2023
 
 
 def sort_section(a, b, sections_sort):
@@ -41,15 +44,13 @@ class NewRepublicMagazine(BasicNewsrackRecipe, BasicNewsRecipe):
     title = _name
     language = "en"
     __author__ = "ping"
-    oldest_article = 62  # days
-    max_articles_per_feed = 30
     description = (
         "Founded in 1914, The New Republic is a media organization dedicated to addressing "
         "today’s most critical issues. https://newrepublic.com/magazine"
     )
     publication_type = "magazine"
     use_embedded_content = False
-    masthead_url = "https://images.newrepublic.com/f5acdc0030e3212e601040dd24d5c2c0c684b15f.png?w=1024&q=65&dpi=1&fit=crop&crop=faces&h=512"
+    masthead_url = "https://images.newrepublic.com/f5acdc0030e3212e601040dd24d5c2c0c684b15f.png?w=512&q=65&dpi=1&fit=crop&crop=faces&h=256"
     remove_attributes = ["height", "width"]
     ignore_duplicate_articles = {"title", "url"}
     remove_empty_feeds = True
@@ -61,7 +62,7 @@ class NewRepublicMagazine(BasicNewsrackRecipe, BasicNewsRecipe):
 
     extra_css = """
     h1.headline { font-size: 1.8rem; margin-bottom: 0.4rem; }
-    h2.subheadline { font-size: 1.2rem; font-style: italic; margin-bottom: 1rem; }
+    h2.subheadline { font-size: 1.2rem; font-style: italic; margin-bottom: 1rem; font-weight: normal; }
     .article-meta {  margin-bottom: 1rem; }
     .article-meta span { display: inline-block; font-weight: bold; color: #444; margin-right: 0.5rem; }
     .article-meta span:last-child { font-weight: normal; }
@@ -74,14 +75,12 @@ class NewRepublicMagazine(BasicNewsrackRecipe, BasicNewsRecipe):
     div.author-bios { margin-top: 2rem; font-style: italic; color: #444; border-top: solid 1px #444; }
     """
 
-    def _urlize(self, url_string, base_url=None):
-        if url_string.startswith("//"):
-            url_string = "https:" + url_string
-        if url_string.startswith("/"):
-            url_string = urljoin(base_url or self.BASE_URL, url_string)
-        return url_string
-
     def _article_endpoint(self, nid):
+        """
+        Graphql endpoint to fetch full article
+        :param nid:
+        :return:
+        """
         query = """
 query ($id: ID, $nid: ID) {
   Article(id: $id, nid: $nid) {
@@ -173,7 +172,16 @@ fragment ArticlePageFields on Article {
         return f"https://newrepublic.com/graphql?{urlencode(params)}"
 
     def _resize_image(self, image_url, width, height):
-        max_width = 800
+        """
+        Rewrite the image url to fetch a device appropriate sized one instead
+        of the full-res one
+
+        :param image_url:
+        :param width:
+        :param height:
+        :return:
+        """
+        max_width = self.scale_news_images[0] if self.scale_news_images else 800
         crop_params = {
             "auto": "compress",
             "ar": f"{width}:{height}",
@@ -205,7 +213,10 @@ fragment ArticlePageFields on Article {
         try:
             post_authors = [a["name"] for a in article.get("authors", [])]
             if post_authors:
-                author_bios_html = f'<div class="author-bios">{"".join([a.get("blurb", "") for a in article.get("authors", [])])}</div>'
+                author_bios_html = "".join(
+                    [a.get("blurb", "") for a in article.get("authors", [])]
+                )
+                author_bios_html = f'<div class="author-bios">{author_bios_html}</div>'
         except (KeyError, TypeError):
             pass
 
@@ -214,12 +225,30 @@ fragment ArticlePageFields on Article {
         if article.get("ledeImage"):
             img = article["ledeImage"]
             lede_img_url = self._resize_image(
-                self._urlize(img["src"]), img["width"], img["height"]
+                urljoin(self.BASE_URL, img["src"]), img["width"], img["height"]
             )
+            lede_image_caption = ""
+            if article.get("ledeImageRealCaption"):
+                lede_image_caption = (
+                    f'<span class="caption">{article["ledeImageRealCaption"]}>/span>'
+                )
             lede_image_html = f"""<p class="lede-media">
-                <img src="{lede_img_url}">
-                {f'<span class="caption">{article["ledeImageRealCaption"]}</span>' if article.get("ledeImageRealCaption") else ""}
-            </p>"""
+                <img src="{lede_img_url}">{lede_image_caption}
+                </p>"""
+
+        body_soup = BeautifulSoup(article["body"], features="html.parser")
+        for img in body_soup.find_all("img", attrs={"data-serialized": True}):
+            try:
+                img_info = json.loads(img["data-serialized"])
+                img_src = self._resize_image(
+                    urljoin(self.BASE_URL, img_info["src"]),
+                    img_info["width"],
+                    img_info["height"],
+                )
+                img["src"] = img_src
+                del img["data-serialized"]
+            except:  # noqa
+                pass
 
         return f"""<html>
         <head><title>{article["cleanTitle"]}</title></head>
@@ -234,14 +263,18 @@ fragment ArticlePageFields on Article {
                 </span>
             </div>
             {lede_image_html}
-            {article["body"]}
+            {str(body_soup)}
             {author_bios_html}
             </article>
         </body></html>"""
 
     def parse_index(self):
         br = self.get_browser()
-        res = br.open_novisit("https://newrepublic.com/api/content/magazine")
+        params = ""
+        if _issue_url:
+            month = urlparse(_issue_url).path.split("/")[-1]
+            params = f'?{urlencode({"magazineTag": month})}'
+        res = br.open_novisit(f"https://newrepublic.com/api/content/magazine{params}")
         magazine = json.loads(res.read().decode("utf-8"))["data"]
         try:
             self.pub_date = datetime.fromisoformat(magazine["metaData"]["publishedAt"])
@@ -250,13 +283,11 @@ fragment ArticlePageFields on Article {
             self.pub_date = self.parse_date(magazine["metaData"]["publishedAt"])
         self.log.debug(f'Found issue: {magazine["metaData"]["issueTag"]["text"]}')
         self.title = f'{_name}: {magazine["metaData"]["issueTag"]["text"]}'
-        self.cover_url = self._urlize(magazine["metaData"]["image"]["src"])
+        self.cover_url = urljoin(self.BASE_URL, magazine["metaData"]["image"]["src"])
 
         feed_articles = []
         for k, articles in magazine.items():
-            if not k.startswith("magazine"):
-                continue
-            if not articles:
+            if not (k.startswith("magazine") and articles):
                 continue
             try:
                 for article in articles:
@@ -285,6 +316,8 @@ fragment ArticlePageFields on Article {
             "Backstory",
             "SignsAndWonders",
             "Usandtheworld",
+            "Booksandthearts",
+            "Poetry",
             "Exposure",
         ]
         sort_category_key = cmp_to_key(lambda a, b: sort_section(a, b, sort_sections))
