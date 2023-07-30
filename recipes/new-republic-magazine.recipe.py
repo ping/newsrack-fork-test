@@ -34,10 +34,9 @@ def sort_section(a, b, sections_sort):
         return -1
     if a_index > b_index:
         return 1
-    if a_index == b_index:
-        if a["section"] == b["section"]:
-            return -1 if a["date"] < b["date"] else 1
-        return -1 if a["section"] < b["section"] else 1
+    if a["section"] == b["section"]:
+        return -1 if a["date"] < b["date"] else 1
+    return -1 if a["section"] < b["section"] else 1
 
 
 class NewRepublicMagazine(BasicNewsrackRecipe, BasicNewsRecipe):
@@ -167,8 +166,7 @@ fragment ArticlePageFields on Article {
     label
   }
 }"""
-        variables = {"nid": str(nid)}
-        params = {"query": query, "variables": json.dumps(variables)}
+        params = {"query": query, "variables": json.dumps({"nid": str(nid)})}
         return f"https://newrepublic.com/graphql?{urlencode(params)}"
 
     def _resize_image(self, image_url, width, height):
@@ -181,7 +179,6 @@ fragment ArticlePageFields on Article {
         :param height:
         :return:
         """
-        max_width = self.scale_news_images[0] if self.scale_news_images else 800
         crop_params = {
             "auto": "compress",
             "ar": f"{width}:{height}",
@@ -191,7 +188,7 @@ fragment ArticlePageFields on Article {
             "ixlib": "react-9.0.2",
             "dpr": 1,
             "q": 65,
-            "w": max_width,
+            "w": self.scale_news_images[0] if self.scale_news_images else 800,
         }
         url_tuple = urlsplit(image_url)
         return f"{url_tuple.scheme}://{url_tuple.netloc}{url_tuple.path}?{urlencode(crop_params)}"
