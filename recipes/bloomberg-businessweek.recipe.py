@@ -39,12 +39,11 @@ class BloombergBusinessweek(BasicNewsRecipe):
     date_format = "%I:%M%p, %-d %b, %Y" if iswindows else "%-I:%M%p, %-d %b, %Y"
     requires_version = (6, 24, 0)  # cos we're using get_url_specific_delay()
 
-    # NOTES: Bot detection kicks in really easily so either:
-    # - limit the number of feeds
-    # - or max_articles_per_feed
-    # - or increase delay
-    # delay = 0.1
-    simultaneous_downloads = 2
+    # NOTES: Bot detection kicks in really easily so if blocked:
+    # - increase delay
+    delay = 14  # not in use since we're using get_url_specific_delay()
+    delay_range = range(12, 16)  # actual delay is a random choice from this
+    simultaneous_downloads = 1
     oldest_article = 7
     max_articles_per_feed = 25
 
@@ -65,6 +64,7 @@ class BloombergBusinessweek(BasicNewsRecipe):
                 "video-player__overlay",
                 "css--social-wrapper-outer",
                 "css--recirc-wrapper",
+                "__sticky__audio__bar__portal__",
             ]
         ),
         dict(name=["aside"], class_=["postr-recirc"]),
@@ -85,6 +85,7 @@ class BloombergBusinessweek(BasicNewsRecipe):
         display: block; font-size: 0.8rem; margin-top: 0.2rem;
     }
     .trashline { font-style: italic; }
+    blockquote p { font-size: 1.25rem; margin-left: 0; text-align: center; }
     """
 
     # We send no cookies to avoid triggering bot detection
@@ -96,7 +97,7 @@ class BloombergBusinessweek(BasicNewsRecipe):
 
     def get_url_specific_delay(self, url):
         if urlparse(url).hostname != "assets.bwbx.io":
-            return random.choice([r * 0.5 for r in range(1, 5)])
+            return random.choice(self.delay_range)
         return 0
 
     def open_novisit(self, *args, **kwargs):
@@ -114,12 +115,13 @@ class BloombergBusinessweek(BasicNewsRecipe):
             ),
             ("accept-language", "en,en-US;q=0.5"),
             ("connection", "keep-alive"),
+            ("host", urlparse(target_url).hostname),
+            ("upgrade-insecure-requests", "1"),
             ("user-agent", random_user_agent(0, allow_ie=False)),
         ]
         br.set_handle_redirect(False)
         try:
             res = br.open_novisit(*args, **kwargs)
-            self.download_count += 1
             return res
         except Exception as e:
             is_redirected_to_challenge = False
@@ -138,7 +140,7 @@ class BloombergBusinessweek(BasicNewsRecipe):
     open = open_novisit
 
     def cleanup(self):
-        if self.download_count <= 1 + (1 if self.masthead_url else 0):
+        if self.download_count <= 0:
             err_msg = "No articles downloaded."
             self.log.warn(err_msg)
             self.abort_recipe_processing(err_msg)
@@ -227,7 +229,9 @@ class BloombergBusinessweek(BasicNewsRecipe):
                 div.append(img)
                 if photo.get("caption"):
                     caption = soup.new_tag("div", attrs={"class": "caption"})
-                    caption.append(photo["caption"])
+                    caption.append(
+                        BeautifulSoup(photo["caption"], features="html.parser")
+                    )
                     div.append(caption)
                 if photo.get("credit"):
                     credit = soup.new_tag("div", attrs={"class": "credit"})
@@ -283,6 +287,7 @@ class BloombergBusinessweek(BasicNewsRecipe):
                 parent.append(content_ele)
 
     def preprocess_raw_html(self, raw_html, url):
+        self.download_count += 1
         article = None
         soup = BeautifulSoup(raw_html)
         for script in soup.find_all(
@@ -292,10 +297,10 @@ class BloombergBusinessweek(BasicNewsRecipe):
                 "data-component-props": ["ArticleBody", "FeatureBody"],
             },
         ):
-            j = json.loads(script.contents[0])
-            if not j.get("story"):
+            article = json.loads(script.contents[0])
+            if not article.get("story"):
+                article = None
                 continue
-            article = j
             break
         if not article:
             script = soup.find(
@@ -359,7 +364,10 @@ class BloombergBusinessweek(BasicNewsRecipe):
         if article.get("byline"):
             soup.find(class_="article-meta").insert(
                 0,
-                BeautifulSoup(f'<span class="author">{article["byline"]}</span>'),
+                BeautifulSoup(
+                    f'<span class="author">{article["byline"]}</span>',
+                    features="html.parser",
+                ),
             )
         else:
             try:
@@ -368,7 +376,8 @@ class BloombergBusinessweek(BasicNewsRecipe):
                     soup.find(class_="article-meta").insert(
                         0,
                         BeautifulSoup(
-                            f'<span class="author">{", ".join(post_authors)}</span>'
+                            f'<span class="author">{", ".join(post_authors)}</span>',
+                            features="html.parser",
                         ),
                     )
             except (KeyError, TypeError):
@@ -379,7 +388,8 @@ class BloombergBusinessweek(BasicNewsRecipe):
             soup.body.article.insert(
                 0,
                 BeautifulSoup(
-                    f'<span class="article-section">{" / ".join(categories)}</span>'
+                    f'<span class="article-section">{" / ".join(categories)}</span>',
+                    features="html.parser",
                 ),
             )
         # inject lede image
@@ -393,7 +403,9 @@ class BloombergBusinessweek(BasicNewsRecipe):
                 caption_ele = soup.new_tag(
                     "div", attrs={"class": "news-figure-caption-text"}
                 )
-                caption_ele.append(BeautifulSoup(lede_img_caption_html))
+                caption_ele.append(
+                    BeautifulSoup(lede_img_caption_html, features="html.parser")
+                )
                 img_container.append(caption_ele)
             soup.body.article.append(img_container)
 

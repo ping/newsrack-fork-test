@@ -40,14 +40,6 @@ categories_sort: List[str] = ["News", "Magazines", "Online Magazines", "Arts & C
 # Keep this list in alphabetical order
 recipes: List[Recipe] = [
     Recipe(
-        recipe="aeon",
-        slug="aeon",
-        src_ext="mobi",
-        target_ext=["epub"],
-        category="Online Magazines",
-        cover_options=CoverOptions(logo_path_or_url="https://aeon.co/logo.png"),
-    ),
-    Recipe(
         recipe="asahi-shimbun",
         slug="asahi-shimbun",
         src_ext="mobi",
@@ -230,17 +222,6 @@ recipes: List[Recipe] = [
     Recipe(
         recipe="ft",
         slug="ft-online",
-        src_ext="mobi",
-        target_ext=["epub"],
-        category="News",
-        tags=["business"],
-        cover_options=CoverOptions(
-            logo_path_or_url="https://www.ft.com/partnercontent/content-hub/static/media/ft-horiz-new-black.215c1169.png"
-        ),
-    ),
-    Recipe(
-        recipe="ft-paper",
-        slug="ft-print",
         src_ext="mobi",
         target_ext=["epub"],
         category="News",
@@ -752,17 +733,17 @@ recipes: List[Recipe] = [
     #     enable_on=(first_n_days_of_month(7) or last_n_days_of_month(7))
     #     and onlyat_hours(list(range(4, 12))),
     # ),
-    Recipe(
-        recipe="wsj-paper",
-        slug="wsj-print",
-        src_ext="mobi",
-        target_ext=["epub"],
-        category="News",
-        tags=["business"],
-        timeout=300,
-        enable_on=onlyat_hours(list(range(0, 8)), -4),
-        cover_options=CoverOptions(
-            logo_path_or_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/WSJ_Logo.svg/1024px-WSJ_Logo.svg.png"
-        ),
-    ),
+    # Recipe(
+    #     recipe="wsj-paper",
+    #     slug="wsj-print",
+    #     src_ext="mobi",
+    #     target_ext=["epub"],
+    #     category="News",
+    #     tags=["business"],
+    #     timeout=300,
+    #     enable_on=onlyat_hours(list(range(0, 8)), -4),
+    #     cover_options=CoverOptions(
+    #         logo_path_or_url="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/WSJ_Logo.svg/1024px-WSJ_Logo.svg.png"
+    #     ),
+    # ),
 ]
